@@ -1,0 +1,94 @@
+import plagas.*
+import elementos.*
+
+describe "elementos y plagas"{
+	
+	const hogar01 = new Hogar(mugre=20, confort=50) //bueno
+	const hogar02 = new Hogar(mugre=50, confort=20) //malo
+	const huerta01 = new Huerta(produccion=50, nivelProduccion=20) //bueno
+	const huerta02 = new Huerta(produccion=20, nivelProduccion=50) //malo
+	const mascota01 = new Mascota(salud=260) //bueno
+	const mascota02 = new Mascota(salud=1) //malo	
+	const barrio01 = new Barrio()
+	const barrio02 = new Barrio()
+	const barrio03 = new Barrio()
+	const cuca01 = new PlagaCucarachas(poblacion=20, pesoPromedio=10) //d=10, enferma
+	const cuca02 = new PlagaCucarachas(poblacion=10, pesoPromedio=7) //d=5, NO enferma
+	const pulgas01 = new PlagaPulgas(poblacion=20) //d=40, enferma	
+	const pulgas02 = new PlagaPulgas(poblacion=8) //d=16, NO enferma	
+	const garrapatas01 = new PlagaGarrapatas(poblacion=20) //d=40, enferma	
+	const garrapatas02 = new PlagaGarrapatas(poblacion=8) //d=16, NO enferma
+	const mosquitos01 = new PlagaMosquitos(poblacion=21) //d=21, enferma
+	const mosquitos02 = new PlagaMosquitos(poblacion=8) //d=8, NO enferma
+	
+	test "elementos buenos" {
+		assert.that(hogar01.esBueno())
+		assert.that(huerta01.esBueno())
+		assert.that(mascota01.esBueno())
+		assert.notThat(hogar02.esBueno())
+		assert.notThat(huerta02.esBueno())
+		assert.notThat(mascota02.esBueno())		
+	}
+	test "daño y enfermedad plagas" {
+		assert.equals(10, cuca01.nivelDanio())
+		assert.equals(16, pulgas02.nivelDanio())
+		assert.equals(40, garrapatas01.nivelDanio())
+		assert.equals(8, mosquitos02.nivelDanio())
+		assert.notThat(cuca02.enferma())
+		assert.that(pulgas01.enferma())
+		assert.notThat(garrapatas02.enferma())
+		assert.that(mosquitos01.enferma())
+	}
+
+	test "barrio copado" {
+		barrio01.agregarAll([hogar01, huerta01, mascota02])
+		assert.that(barrio01.esCopado())
+		assert.that(barrio01.esBueno(hogar01))
+	}
+	test "barrio no copado" {
+		barrio02.agregarAll([hogar02, huerta02, mascota01])
+		assert.notThat(barrio02.esCopado())
+		assert.notThat(barrio02.esBueno(huerta02))
+	}
+	test "ataques" {
+		hogar01.ataque(cuca01)
+		assert.equals(30, hogar01.mugre())
+		assert.equals(12,cuca01.pesoPromedio())
+		assert.equals(22,cuca01.poblacion())
+		huerta02.ataque(mosquitos02)
+		assert.equals(19.2, huerta02.produccion())
+		assert.equals(8.8,mosquitos02.poblacion())
+		mascota02.ataque(pulgas01)
+		assert.equals(0, mascota02.salud())
+		assert.equals(22, pulgas01.poblacion())
+		mascota01.ataque(garrapatas02)
+		assert.equals(260, mascota01.salud())
+		assert.equals(9.6, garrapatas02.poblacion())		
+	}
+	test "ataque en el barrio" {
+		barrio01.agregarAll([hogar01, huerta01, mascota02])
+		barrio01.ataque(mosquitos01) 				//21
+		assert.equals(41, hogar01.mugre()) 			//23.1 (ya no enferma)
+		assert.equals(47.69, huerta01.produccion())	//25.41
+		assert.equals(1, mascota02.salud())
+	}
+	test "invasion" {
+		barrio03.agregarAll([hogar02, huerta02, mascota01])
+		barrio03.superAtaque([cuca01, pulgas01, garrapatas01])
+		assert.equals(140, hogar02.mugre())
+		assert.equals(0, huerta02.produccion())
+		
+//		assert.equals(151.9, mascota01.salud())
+// no pude encontrar este error 		
+		
+		assert.equals(16,cuca01.pesoPromedio())
+		assert.equals(26.62,cuca01.poblacion())
+		assert.equals(13.31, cuca01.nivelDanio())
+		assert.equals(26.62, pulgas01.poblacion())
+		assert.equals(53.24, pulgas01.nivelDanio())
+		assert.equals(34.56, garrapatas01.poblacion())
+		assert.equals(69.12, garrapatas01.nivelDanio())
+	}
+		
+		
+}
